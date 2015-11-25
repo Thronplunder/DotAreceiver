@@ -20,7 +20,7 @@ DotaOSC {
 
 	addPlayer{|id, heroID, networth, position, team|
 
-			players.add(Player.new(id, heroID, networth, [0, 0]));
+			players.add(Player.new(id, networth, [0, 0]));
 	}
 
 	calcXPDiff{
@@ -50,4 +50,23 @@ DotaOSC {
 		});
 		this.experience = radNet - direNet;
 	}
+
+	networthChange {|playerID, gold|
+		players.do({|player|
+			if(playerID == player.getID(),{
+				player.changeNetworth(gold);
+			});
+		});
+		this.calcNetworthDiff();
+	}
+
+	xpChange {|playerID, xp|
+		players.do({|player|
+			if(playerID == player.getID(),{
+				player.changeXP(XP);
+			});
+		});
+		this.calcCPDiff();
+	}
+}
 }
