@@ -8,10 +8,15 @@
 
 		OSCdef(\NPCSpawned, {|msg, time, addr, rport|
 			msg.postln;
-			}, "/Dota2NPCSpawned");
+			}, "/Dota2NPCSpawn");
 
 		OSCdef(\HeroSpawned, {|msg, time, addr, rport|
 			msg.postln;
+			this.players.do({|player|
+				if(player.getID() == msg[1], {
+					player.setAlive(true);
+				});
+			});
 			}, "/Dota2HeroSpawned");
 
 		OSCdef(\ItemPickedUp, {|msg, time, addr, rport|
@@ -45,14 +50,29 @@
 
 		OSCdef(\HeroKill, {|msg, time, addr, rport|
 			msg.postln;
+			this.players.do({|player|
+				if(player.getID() == msg[1],{
+					player.incDeaths();
+					if(player.getTeamID() == 0, {
+						this.direKills = this.direKills + 1;},{
+							this.radiantKills = this.radiantKills + 1;
+					})
+				});
+			});
 			}, "/Dota2HeroKilled");
 
 		OSCdef(\Networth, {|msg, time, addr, rport|
 			msg.postln;
+			this.players.do({|player|
+				if(player.getID() == msg[1], {
+					player.changeNetworth(msg[2]);
+				})
+			})
 			}, "/Dota2Networth");
 
 		OSCdef(\XP, {|msg, time, addr, rport|
 			msg.postln;
 			}, "/Dota2XP");
+		"OSCDefs load".postln;
 	}
 }

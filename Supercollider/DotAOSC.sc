@@ -1,20 +1,22 @@
 DotaOSC {
-	var players, radiantKills, direKills, backgroundsynth, unitsAlive, goldDif, experienceDif;
+	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDif, <>experienceDif, goldBus, goldSynth, xpBus, xpSynth;
 	*new {
 		^super.new()
 	}
 
 	//initialise all the variables, boot the server and start playing sounds
 	initialise {
-		this. direNetworth = 0;
-		this.radiantNetworth = 0;
+		this.goldDif = 0;
 		this.radiantKills = 0;
 		this.direKills = 0;
 		this.players = List.newClear();
 		Server.local.waitForBoot({
 			this.loadOSCDefs();
-			this.gold = Bus.new(numChannels: 1, server: Server.local);
-			this.experience = Bus.new(numChannels: 1, server: Server.local);
+			this.loadSynthDefs();
+			this.goldBus = Bus.new(numChannels: 1, server: Server.local);
+			this.xpBus = Bus.new(numChannels: 1, server: Server.local);
+			goldSynth = Synth(\Gold, [bus: this.goldBus, gold: 0]);
+			xpSynth = Synth(\Exp, [bus: this.xpBus, xp: 0]);
 		});
 	}
 
@@ -68,5 +70,4 @@ DotaOSC {
 		});
 		this.calcCPDiff();
 	}
-}
 }

@@ -1,5 +1,5 @@
 Player {
-	var <>sound, <>networth, <>experience, <>kills, <>deaths, <>position, <>id, <>teamID, <>level;
+	var <>sound, <>networth, <>experience, <>kills, <>deaths, <>position, <>id, <>teamID, <>level, <>alive;
 	*new{|id, heroID, networth, position, teamID|
 		^super.new.init(id, heroID, networth, position);
 	}
@@ -8,9 +8,15 @@ Player {
 		this.networth = networth;
 		this.kills = 0;
 		this.id = id;
-		this.teamId = teamID;
+		this.teamID = teamID;
 		this.level = 1;
+		this.alive = true;
 		this.position = Point.new(position[0], position[1]);
+		if(teamID == 0, {
+			this.sound = Synth(\RadiantHero);
+		}, {
+				this.sound = Synth(\DireHero);
+		});
 	}
 	changeNetworth{|newNetworth|
 		this.networth = newNetworth;
@@ -39,5 +45,12 @@ Player {
 	}
 	getTeamID {
 		^this.teamID;
+	}
+
+	setAlive{|status|
+		this.alive = status;
+	}
+	getID{
+		^this.id;
 	}
 }

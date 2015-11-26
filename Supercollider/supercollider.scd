@@ -1,7 +1,10 @@
 
 //actually spawn an instance of the Game
 v = DotaOSC.new();
-OSCdef(\test, { |msg, time, addr, rport| v.initialise()}, "/Dota2PlayersLoaded" )
+v.initialise();
+OSCdef(\test, { |msg, time, addr, rport|
+	msg.postln;
+	v.initialise()}, "/Dota2PlayersLoaded" )
 
 
 [60, 55, 67, 35].midicps
@@ -18,3 +21,11 @@ SynthDef(\Background, {|freq, amp, gold, xp|
 c = Synth(\Background);
 
 {SinOsc.ar()}.play
+
+OSCdef(\NPCSpawn, {|msg, time, addr, rport|
+			msg.postln;
+			}, "/Dota2NPCSpawn");
+
+
+NetAddr.langPort
+
