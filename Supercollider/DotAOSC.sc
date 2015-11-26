@@ -1,5 +1,5 @@
 DotaOSC {
-	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDif, <>experienceDif, goldBus, goldSynth, xpBus, xpSynth;
+	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDif, <>experienceDif, <>goldBus, <>goldSynth, <>xpBus, <>xpSynth;
 	*new {
 		^super.new()
 	}
@@ -13,11 +13,13 @@ DotaOSC {
 		Server.local.waitForBoot({
 			this.loadOSCDefs();
 			this.loadSynthDefs();
-			this.goldBus = Bus.new(numChannels: 1, server: Server.local);
-			this.xpBus = Bus.new(numChannels: 1, server: Server.local);
-			goldSynth = Synth(\Gold, [bus: this.goldBus, gold: 0]);
-			xpSynth = Synth(\Exp, [bus: this.xpBus, xp: 0]);
+			this.goldBus = Bus.audio(Server.local, 1);
+			this.xpBus = Bus.audio(Server.local, 1);
+			//goldSynth = Synth(\Gold, [bus: this.goldBus, gold: 0]);
+			//xpSynth = Synth(\Exp, [bus: this.xpBus, xp: 0]);
 		});
+		goldSynth = Synth(\Gold, [bus: this.goldBus, gold: 0]);
+		xpSynth = Synth(\Exp, [bus: this.xpBus, xp: 0]);
 	}
 
 	addPlayer{|id, heroID, networth, position, team|
@@ -69,5 +71,10 @@ DotaOSC {
 			});
 		});
 		this.calcCPDiff();
+	}
+
+	onPlayerSpawned{|id, networth, position, teamID|
+		"Player spawned".postln;
+		this.players.add(Player.new(id, networth, [0,0], teamID ));
 	}
 }

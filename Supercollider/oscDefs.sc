@@ -3,7 +3,7 @@
 		//OSCdef(\Playersloaded, {}, "/Dota2PlayersLoaded");
 		OSCdef(\PlayerSpawned, {|msg, time, addr, rport|
 			msg.postln;
-			this.players.add(Player.new(msg[1], msg[3], nil, msg[2] ))
+			this.onPlayerSpawned(msg[1], msg[3], nil, msg[2]);
 		}, "/Dota2PlayerSpawned");
 
 		OSCdef(\NPCSpawned, {|msg, time, addr, rport|

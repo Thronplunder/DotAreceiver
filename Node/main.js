@@ -5,7 +5,7 @@ var osc = require("osc")
 var string = require("string")
 
 //variables
-var recvPort = 57110;
+var recvPort = 57510;
 var sendPort = 57120;
 var ipAddress = "127.0.0.1";
 var httpPort = 8082;
@@ -42,17 +42,17 @@ http.createServer(function (request, response){
 	message = string(request.url).chompLeft('/');
 
 	//parsing the message to a json object
-	messageObj = JSON.parse(message);s
+	messageObj = JSON.parse(message);
 	//console.log(messageObj.EventName);
 	var oscAddress = string(messageObj.eventName).ensureLeft('/')
 	var appendix = createOSCArgs(messageObj);
 
 	//sending the osc message
-	console.log("Sending: " + appendix + " to: " + address);
+	console.log("Sending: " + appendix + " to: " + oscAddress);
 	udpPort.send({
-		address: address,
+		address: oscAddress,
 		args: appendix
-	}, ipAdress, sendPort);
+	}, ipAddress, sendPort);
 
    // Send the response body as "Hello World"
    response.end('Hello World\n');
