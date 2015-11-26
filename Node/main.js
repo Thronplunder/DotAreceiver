@@ -7,7 +7,7 @@ var string = require("string")
 //variables
 var recvPort = 57110;
 var sendPort = 57120;
-var ipAdress = "127.0.0.1";
+var ipAddress = "127.0.0.1";
 var httpPort = 8082;
 
 //setting up OSC
