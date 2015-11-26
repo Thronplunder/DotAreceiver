@@ -2,13 +2,18 @@
 //required libraries
 var http = require("http")
 var osc = require("osc")
-//var json = require("json")
 var string = require("string")
+
+//variables
+var recvPort = 57110;
+var sendPort = 57120;
+var ipAdress = "127.0.0.1";
+var httpPort = 8082;
 
 //setting up OSC
 var udpPort = new osc.UDPPort({
-	localAddress: "127.0.0.1",
-	localPort: 57110
+	localAddress: ipAddress,
+	localPort: recvPort
 });
 udpPort.open();
 
@@ -37,9 +42,9 @@ http.createServer(function (request, response){
 	message = string(request.url).chompLeft('/');
 
 	//parsing the message to a json object
-	messageObj = JSON.parse(message);
+	messageObj = JSON.parse(message);s
 	//console.log(messageObj.EventName);
-	var address = string(messageObj.eventName).ensureLeft('/')
+	var oscAddress = string(messageObj.eventName).ensureLeft('/')
 	var appendix = createOSCArgs(messageObj);
 
 	//sending the osc message
@@ -47,7 +52,7 @@ http.createServer(function (request, response){
 	udpPort.send({
 		address: address,
 		args: appendix
-	}, "127.0.0.1", 57120);
+	}, ipAdress, sendPort);
 
    // Send the response body as "Hello World"
    response.end('Hello World\n');
