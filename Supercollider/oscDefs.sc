@@ -12,11 +12,7 @@
 
 		OSCdef(\HeroSpawned, {|msg, time, addr, rport|
 			msg.postln;
-			this.players.do({|player|
-				if(player.getID() == msg[1], {
-					player.setAlive(true);
-				});
-			});
+			this.onHeroSpawned(msg[1]);
 			}, "/Dota2HeroSpawned");
 
 		OSCdef(\ItemPickedUp, {|msg, time, addr, rport|
@@ -33,45 +29,32 @@
 
 		OSCdef(\LevelUp, {|msg, time, addr, rport|
 			msg.postln;
-			this.players.do({|player|
-				if(player.getID() == msg[1],{
-					player.incLevel();
-				})
-			});
+			this.onLevelUp(msg[1]);
 			}, "/Dota2LevelUp");
 
 		OSCdef(\LastHit, {|msg, time, addr, rport|
 			msg.postln;
+			this.onLastHit(msg[1], msg[2]);
 			}, "/Dota2LastHit");
 
 		OSCdef(\TreeCut, {|msg, time, addr, rport|
 			msg.postln;
+			this.onTreeCut(msg[1], msg[2]);
 			}, "Dota2TreeCut");
 
 		OSCdef(\HeroKill, {|msg, time, addr, rport|
 			msg.postln;
-			this.players.do({|player|
-				if(player.getID() == msg[1],{
-					player.incDeaths();
-					if(player.getTeamID() == 0, {
-						this.direKills = this.direKills + 1;},{
-							this.radiantKills = this.radiantKills + 1;
-					})
-				});
-			});
+			this.onHeroKill(msg[1]);
 			}, "/Dota2HeroKilled");
 
 		OSCdef(\Networth, {|msg, time, addr, rport|
 			msg.postln;
-			this.players.do({|player|
-				if(player.getID() == msg[1], {
-					player.changeNetworth(msg[2]);
-				})
-			})
+			this.onNetworthChange(msg[1], msg[2]);
 			}, "/Dota2Networth");
 
 		OSCdef(\XP, {|msg, time, addr, rport|
 			msg.postln;
+			this.onXPChange(msg[1], msg[2]);
 			}, "/Dota2XP");
 		"OSCDefs load".postln;
 	}

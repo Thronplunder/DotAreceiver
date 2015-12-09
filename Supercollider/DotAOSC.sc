@@ -1,5 +1,5 @@
 DotaOSC {
-	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDif, <>experienceDif, <>goldBus, <>goldSynth, <>xpBus, <>xpSynth;
+	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDiff, <>experienceDiff, <>direGoldBus, <>goldSynth, <>direXPBus, <>radGoldBus, <>radXPBus,  <>xpSynth, <>maxXPDiff, <>maxGoldDiff;
 	*new {
 		^super.new()
 	}
@@ -9,17 +9,20 @@ DotaOSC {
 		this.goldDif = 0;
 		this.radiantKills = 0;
 		this.direKills = 0;
-		this.players = List.newClear();
+		this.players = Dictionary.new(10);
+		maxXPDiff = 0;
+		maxGoldDiff = 0;
 		Server.local.waitForBoot({
 			this.loadOSCDefs();
-			this.loadSynthDefs();
-			this.goldBus = Bus.audio(Server.local, 1);
-			this.xpBus = Bus.audio(Server.local, 1);
-			//goldSynth = Synth(\Gold, [bus: this.goldBus, gold: 0]);
-			//xpSynth = Synth(\Exp, [bus: this.xpBus, xp: 0]);
+			this.loadSynthfs();
+			this.direGoldBus = Bus.audio(Server.local, 1);
+			this.direXPBus = Bus.audio(Server.local, 1);
+			this.radGoldBus = Bus.audio(Server.local);
+			this.radXPBus = Bus.audio(Server.local);
 		});
-		goldSynth = Synth(\Gold, [bus: this.goldBus, gold: 0]);
-		xpSynth = Synth(\Exp, [bus: this.xpBus, xp: 0]);
+		this.goldSynth = Synth(\Gold, [bus: this.goldBus, gold: 0]);
+		this.xpSynth = Synth(\Exp, [bus: this.xpBus, xp: 0]);
+		this.backgroundsynth = Synth(\Background);
 	}
 
 	addPlayer{|id, heroID, networth, position, team|
@@ -38,7 +41,11 @@ DotaOSC {
 					direXP = direXP + item.getXP();
 			});
 		});
-		this.experience = radXP - direXP;
+		this.experienceDiff = radXP - direXP;
+		if(this.maxXPDiff < this.experienceDif.abs, {this.maxXPDiff = this.experienceDiff.abs;});
+		this.direXPBus.set(direXP / this.maxXPDiff);
+		this.radXPBus.set(radXP / this.maxXPDiff);
+
 	}
 
 	calcNetworthDiff{
@@ -52,29 +59,57 @@ DotaOSC {
 					direNet = direNet + item.getXP();
 			});
 		});
-		this.experience = radNet - direNet;
+		this.goldDiff = radNet - direNet;
+		if(this.maxGoldDiff < this.golsDif.abs, {this.maxGoldDiff = this.goldDiff.abs;});
+		this.direGoldBus.set(direNet / this.maxGoldDiff);
+		this.radGoldBus.set(radNet / this.maxGoldDiff);
 	}
 
 	networthChange {|playerID, gold|
-		players.do({|player|
-			if(playerID == player.getID(),{
-				player.changeNetworth(gold);
-			});
-		});
+		this.players.at(playerID).changeNetworth(gold);
 		this.calcNetworthDiff();
 	}
 
 	xpChange {|playerID, xp|
-		players.do({|player|
-			if(playerID == player.getID(),{
-				player.changeXP(XP);
-			});
-		});
-		this.calcCPDiff();
+		this.players.at(playerID).changeXP(xp);
+		this.calcXPDiff();
 	}
 
 	onPlayerSpawned{|id, networth, position, teamID|
 		"Player spawned".postln;
-		this.players.add(Player.new(id, networth, [0,0], teamID ));
+		this.players.add(id, Player.new(id, networth, [0,0], teamID ));
+	}
+
+	onHeroSpawned{|playerID|
+		this.players.at(playerID).setAlive(true);
+	}
+
+	onLevelUp{|playerID|
+		this.players.at(playerID).incLevel();
+	}
+
+	onLastHit{|playerID, isHeroKill|
+		if(isHeroKill, {
+			players.at(playerID).incKills();
+		}, {
+				Synth(\LastHit, [\note, Scale.myxolydian.degrees.choose + 60]);
+		});
+	}
+
+	onHeroKill{|playerID|
+		var player = this.players.at(playerID);
+		player.incDeaths();
+	}
+
+	onTreeCut{|xCoord, yCoord|
+
+	}
+
+	onNetworthChange{|playerID, newNetworth|
+		this.players.at(playerID).changeNetworth(newNetworth);
+	}
+
+	onXPChange{|playerID, newXP|
+		this.players.at(playerID).changeXP(newXP);
 	}
 }
