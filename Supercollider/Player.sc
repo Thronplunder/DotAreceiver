@@ -7,13 +7,14 @@ Player {
 		position = position ? [0, 0];
 		this.networth = networth;
 		this.kills = 0;
+		this.deaths = 0;
 		this.id = id;
 		this.teamID = teamID;
 		this.level = 1;
 		this.alive = true;
 		this.position = Point.new(position[0], position[1]);
-		this.detune = Bus.control(Server.local).set(0);
-		if(teamID == 0, {
+		this.detune = 0;
+		if(teamID == 2, {
 			this.sound = Synth(\RadiantHero, [\detune, this.detune]);
 		}, {
 				this.sound = Synth(\DireHero, [\detune,  this.detune]);
@@ -52,11 +53,6 @@ Player {
 	}
 	setAlive{|status|
 		this.alive = status;
-		/*if(status == false, {
-			this.sound.run(false);
-		}, {
-				this.sound.run();
-		})*/
 	}
 	getID{
 		^this.id;
@@ -64,8 +60,10 @@ Player {
 	calcDetune{
 		var killDeathRatio = this.kills / this.deaths;
 		if(killDeathRatio > 1, {
-			this.detune.set(0);
-			}, {this.detune.set((1 - killDeathRatio) * 3);
+			this.detune = 0;
+			this.sound.set(\detune, this.detune);
+			}, {this.detune = (1 - killDeathRatio);
+				this.sound.set(\detune, this.detune);
 		});
 	}
 	die {
@@ -75,6 +73,7 @@ Player {
 	}
 	spawn {
 		this.sound.run(true);
+		this.setAlive(true);
 		Synth(\HeroSpawn);
 	}
 }

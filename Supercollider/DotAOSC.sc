@@ -1,12 +1,12 @@
 DotaOSC {
-	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDiff, <>experienceDiff, <>direGoldBus, <>goldSynth, <>direXPBus, <>radGoldBus, <>radXPBus,  <>xpSynth, <>maxXPDiff, <>maxGoldDiff;
+	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDiff, <>experienceDiff, <>direGoldBus, <>direXPBus, <>radGoldBus, <>radXPBus, <>maxXPDiff, <>maxGoldDiff;
 	*new {
 		^super.new()
 	}
 
 	//initialise all the variables, boot the server and start playing sounds
 	initialise {
-		this.goldDif = 0;
+		this.goldDiff = 0;
 		this.radiantKills = 0;
 		this.direKills = 0;
 		this.players = Dictionary.new(10);
@@ -14,15 +14,22 @@ DotaOSC {
 		maxGoldDiff = 0;
 		Server.local.waitForBoot({
 			this.loadOSCDefs();
-			this.loadSynthfs();
-			this.direGoldBus = Bus.audio(Server.local, 1);
-			this.direXPBus = Bus.audio(Server.local, 1);
-			this.radGoldBus = Bus.audio(Server.local);
-			this.radXPBus = Bus.audio(Server.local);
+			this.loadSynthDefs();
+			//this.direGoldBus = Bus.control(Server.local, 1);
+			//this.direXPBus = Bus.control(Server.local, 1);
+			//this.radGoldBus = Bus.control(Server.local);
+			//this.radXPBus = Bus.control(Server.local);
+			//this.maxGoldDiff = 1;
+			//this.direGoldBus.set(1);
+			//this.direXPBus.set(1);
+			//this.radGoldBus.set(1);
+			//this.radXPBus.set(1);
 		});
-		this.goldSynth = Synth(\Gold, [bus: this.goldBus, gold: 0]);
-		this.xpSynth = Synth(\Exp, [bus: this.xpBus, xp: 0]);
-		this.backgroundsynth = Synth(\Background);
+		this.backgroundsynth = Synth(\Background,[\direGold, 1,
+			\radGold, 1,
+			\direXP, 1,
+			\radXP, 1
+		]);
 	}
 
 	addPlayer{|id, heroID, networth, position, team|
@@ -43,9 +50,7 @@ DotaOSC {
 		});
 		this.experienceDiff = radXP - direXP;
 		if(this.maxXPDiff < this.experienceDif.abs, {this.maxXPDiff = this.experienceDiff.abs;});
-		this.direXPBus.set(direXP / this.maxXPDiff);
-		this.radXPBus.set(radXP / this.maxXPDiff);
-
+		this.backgroundSynth.set(\direXP, direXP / this.maxXPDiff, \radXP, radXP / this.maxXPDiff);
 	}
 
 	calcNetworthDiff{
@@ -61,8 +66,7 @@ DotaOSC {
 		});
 		this.goldDiff = radNet - direNet;
 		if(this.maxGoldDiff < this.golsDif.abs, {this.maxGoldDiff = this.goldDiff.abs;});
-		this.direGoldBus.set(direNet / this.maxGoldDiff);
-		this.radGoldBus.set(radNet / this.maxGoldDiff);
+		this.backgroundSynth.set(\direGold, direNet / this.maxGoldDiff, \radGold, radNet / this.maxGoldDiff);
 	}
 
 	networthChange {|playerID, gold|
@@ -77,11 +81,11 @@ DotaOSC {
 
 	onPlayerSpawned{|id, networth, position, teamID|
 		"Player spawned".postln;
-		this.players.add(id, Player.new(id, networth, [0,0], teamID ));
+		this.players.add(id -> Player.new(id, networth, [0,0], teamID ));
 	}
 
 	onHeroSpawned{|playerID|
-		this.players.at(playerID).setAlive(true);
+		this.players.at(playerID).spawn(true);
 	}
 
 	onLevelUp{|playerID|
@@ -89,10 +93,10 @@ DotaOSC {
 	}
 
 	onLastHit{|playerID, isHeroKill|
-		if(isHeroKill, {
+		if(isHeroKill != 0, {
 			players.at(playerID).incKills();
 		}, {
-				Synth(\LastHit, [\note, Scale.myxolydian.degrees.choose + 60]);
+				Synth(\LastHit, [\note, Scale.mixolydian.degrees.choose + 60]);
 		});
 	}
 

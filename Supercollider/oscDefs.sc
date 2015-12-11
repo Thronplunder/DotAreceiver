@@ -3,7 +3,7 @@
 		//OSCdef(\Playersloaded, {}, "/Dota2PlayersLoaded");
 		OSCdef(\PlayerSpawned, {|msg, time, addr, rport|
 			msg.postln;
-			this.onPlayerSpawned(msg[1], msg[3], nil, msg[2]);
+			this.onPlayerSpawned(msg[2], msg[3], nil, msg[1]);
 		}, "/Dota2PlayerSpawned");
 
 		OSCdef(\NPCSpawned, {|msg, time, addr, rport|
@@ -34,7 +34,7 @@
 
 		OSCdef(\LastHit, {|msg, time, addr, rport|
 			msg.postln;
-			this.onLastHit(msg[1], msg[2]);
+			this.onLastHit(msg[2], msg[1]);
 			}, "/Dota2LastHit");
 
 		OSCdef(\TreeCut, {|msg, time, addr, rport|
@@ -54,7 +54,7 @@
 
 		OSCdef(\XP, {|msg, time, addr, rport|
 			msg.postln;
-			this.onXPChange(msg[1], msg[2]);
+			this.onXPChange(msg[2], msg[1]);
 			}, "/Dota2XP");
 		"OSCDefs load".postln;
 	}

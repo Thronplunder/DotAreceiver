@@ -1,20 +1,19 @@
 
 //actually spawn an instance of the Game,
 v = DotaOSC.new();
-v.initialise();:
-
-OSCdef(\test, { |msg, time, addr, rport|
-	msg.postln;
-	v.initialise()}, "/Dota2PlayersLoaded" )
-
+v.initialise(); //evaluate twice to actually start the backgroundsynth (why?)
 //stuff for testing
 
-Scale.major
+Scale.directory
 
 
 v.players
-v.onPlayerSpawned(1, 22, nil, 0)
 
+v.onPlayerSpawned(0, 44,  [0,0], 0)
+v.onLastHit(0, 0)
+v.players.at(1).incDeaths()
+v.onHeroSpawned(1);
+v.players.at(2).changeNetworth(100)
 
 SynthDef(\Background, {|freq, amp, gold, xp|
 	var root = SinOsc.ar( [48, 60, 72, 55, 57, 79].midicps) * 0.5;
@@ -60,3 +59,42 @@ Synth(\Background)
 NetAddr.langPort
 
 {SinOsc.ar() * 0.5}.play
+
+SynthDef(\Background, {|freq, amp = 0.01, direGold = 1, direXP = 1, radGold = 1, radXP = 1|
+	var root = SinOsc.ar( [48, 60, 72, 55, 57, 79].midicps) * 0;
+	var rad = SinOsc.ar([50, 62, 74].midicps) * 1 * radGold;
+	var dire = SinOsc.ar([53, 65, 77].midicps) * 1 * direGold.lag(2);
+	var snd = root + dire + rad;
+	Out.ar(0, Splay.ar(snd * amp));
+}).add;
+
+
+
+
+
+
+~direGoldBus = Bus.control(Server.local);
+~direXPBus = Bus.control(Server.local);
+~radGoldBus = Bus.control(Server.local);
+~radXPBus = Bus.control(Server.local);
+
+~direGoldBus.value = 0;
+~radGoldBus.value = 0;
+
+~backgroundsynth = Synth(\Background,[\direGold, 0.5,
+			\radGold, ~radGoldBus,
+			\direXP, ~direXPBus,
+	\radXP, ~radXPBus]);
+
+
+
+~backgroundsynth.set(\direGold, 0);
+
+
+
+
+["Hello"].postln
+
+
+
+
