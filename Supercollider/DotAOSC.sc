@@ -1,5 +1,5 @@
 DotaOSC {
-	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDiff, <>experienceDiff, <>direGoldBus, <>direXPBus, <>radGoldBus, <>radXPBus, <>maxXPDiff, <>maxGoldDiff;
+	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDiff, <>experienceDiff, <>maxXPDiff, <>maxGoldDiff, <>lastHitSynth, <>mapXSize, <>mapYSize, <>decodeSynth, <>decodeBus;
 	*new {
 		^super.new()
 	}
@@ -10,37 +10,34 @@ DotaOSC {
 		this.radiantKills = 0;
 		this.direKills = 0;
 		this.players = Dictionary.new(10);
-		maxXPDiff = 0;
-		maxGoldDiff = 0;
+		this.maxXPDiff = 0;
+		this.maxGoldDiff = 0;
+		this.mapXSize = 1;
+		this.mapYSize = 1;
 		Server.local.waitForBoot({
 			this.loadOSCDefs();
 			this.loadSynthDefs();
-			//this.direGoldBus = Bus.control(Server.local, 1);
-			//this.direXPBus = Bus.control(Server.local, 1);
-			//this.radGoldBus = Bus.control(Server.local);
-			//this.radXPBus = Bus.control(Server.local);
-			//this.maxGoldDiff = 1;
-			//this.direGoldBus.set(1);
-			//this.direXPBus.set(1);
-			//this.radGoldBus.set(1);
-			//this.radXPBus.set(1);
 		});
 		this.backgroundsynth = Synth(\Background,[\direGold, 1,
 			\radGold, 1,
 			\direXP, 1,
 			\radXP, 1
 		]);
+		this.decodeBus = Bus.audio(Server.local, 3);
+		this.lastHitSynth = Synth(\lastHits);
+		this.decodeSynth = Synth(\decodeSynth);
 	}
 
+	/* unused
 	addPlayer{|id, heroID, networth, position, team|
 
-			players.add(Player.new(id, networth, [0, 0]));
-	}
+			players.add(Player.new(id, networth, [0, 0], team, this.decodeBus ));
+	}*/
 
 	calcXPDiff{
 		var radXP = 0, direXP = 0;
 		players.do({|item|
-			if(item.getTeamID() == 0,
+			if(item.getTeamID() == 2,
 				{
 					radXP = radXP + item.getXP();
 				},
@@ -56,7 +53,7 @@ DotaOSC {
 	calcNetworthDiff{
 		var radNet = 0, direNet = 0;
 		players.do({|item|
-			if(item.getTeamID() == 0,
+			if(item.getTeamID() == 2,
 				{
 					radNet = radNet + item.getXP();
 				},
@@ -65,7 +62,7 @@ DotaOSC {
 			});
 		});
 		this.goldDiff = radNet - direNet;
-		if(this.maxGoldDiff < this.golsDif.abs, {this.maxGoldDiff = this.goldDiff.abs;});
+		if(this.maxGoldDiff < this.goldDif.abs, {this.maxGoldDiff = this.goldDiff.abs;});
 		this.backgroundSynth.set(\direGold, direNet / this.maxGoldDiff, \radGold, radNet / this.maxGoldDiff);
 	}
 
@@ -81,7 +78,7 @@ DotaOSC {
 
 	onPlayerSpawned{|id, networth, position, teamID|
 		"Player spawned".postln;
-		this.players.add(id -> Player.new(id, networth, [0,0], teamID ));
+		this.players.add(id -> Player.new(id,  networth, [0,0], teamID, this.decodeBus ));
 	}
 
 	onHeroSpawned{|playerID|
@@ -95,8 +92,14 @@ DotaOSC {
 	onLastHit{|playerID, isHeroKill|
 		if(isHeroKill != 0, {
 			players.at(playerID).incKills();
-		}, {
-				Synth(\LastHit, [\note, Scale.mixolydian.degrees.choose + 60]);
+			}, {
+				TempoClock.default.schedAbs(TempoClock.default.nextTimeOnGrid(0.25),{
+				fork({
+					this.lastHitSynth.set(\pulseTrig, 1);
+					(0.01).wait;
+					this.lastHitSynth.set(\pulseTrig, 0);
+				});
+				});
 		});
 	}
 
@@ -115,5 +118,14 @@ DotaOSC {
 
 	onXPChange{|playerID, newXP|
 		this.players.at(playerID).changeXP(newXP);
+	}
+
+	onPositionUpdate{|playerID, xPos, yPos|
+		this.	players.at(playerID).updatePosition(Point.new(xPos, yPos));
+	}
+
+	onPlayersLoaded{|xSize, ySize|
+		this.mapXSize = xSize;
+		this.mapYSize = ySize;
 	}
 }

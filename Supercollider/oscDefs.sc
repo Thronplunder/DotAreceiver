@@ -1,6 +1,10 @@
 + DotaOSC {
 	loadOSCDefs{
-		//OSCdef(\Playersloaded, {}, "/Dota2PlayersLoaded");
+		OSCdef(\PlayersLoaded, {|msg, time, addr, rport|
+			msg.postln;
+			this.onPlayersLoaded(msg[1], msg[2]);
+		}, "/Dota2PlayersLoaded");
+
 		OSCdef(\PlayerSpawned, {|msg, time, addr, rport|
 			msg.postln;
 			this.onPlayerSpawned(msg[2], msg[3], nil, msg[1]);
@@ -56,6 +60,13 @@
 			msg.postln;
 			this.onXPChange(msg[2], msg[1]);
 			}, "/Dota2XP");
+		"OSCDefs load".postln;
+
+		OSCdef(\PositionUpdate, {|msg, time, add, rport|
+			msg.postln;
+			this.onPositionUpdate(msg[2], msg[3], msg[1]);
+		}, "Dota2Position");
+
 		"OSCDefs load".postln;
 	}
 }

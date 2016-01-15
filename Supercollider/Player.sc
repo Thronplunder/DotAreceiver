@@ -1,9 +1,11 @@
 Player {
-	var <>sound, <>networth, <>experience, <>kills, <>deaths, <>position, <>id, <>teamID, <>level, <>alive, <>detune;
-	*new{|id, heroID, networth, position, teamID|
-		^super.new.init(id, heroID, networth, position);
+	var <>sound, <>networth, <>experience, <>kills, <>deaths, <>position, <>id, <>teamID, <>level, <>alive, <>detune, <>decodeBus;
+
+
+	*new{|id, networth, position, teamID, bus|
+		^super.new.init(id, networth, position,teamID,  bus);
 	}
-	init{|id, networth, position, teamID|
+	init{|id, networth, position, teamID, bus|
 		position = position ? [0, 0];
 		this.networth = networth;
 		this.kills = 0;
@@ -14,10 +16,15 @@ Player {
 		this.alive = true;
 		this.position = Point.new(position[0], position[1]);
 		this.detune = 0;
+		this.decodeBus = bus;
 		if(teamID == 2, {
-			this.sound = Synth(\RadiantHero, [\detune, this.detune]);
+			TempoClock.default.schedAbs(TempoClock.default.nextTimeOnGrid(0.25),{
+				this.sound = Synth(\RadiantHero, [\detune, this.detune, \speed,[1.5, 1].choose, \bus, this.decodeBus ]);
+			});
 		}, {
-				this.sound = Synth(\DireHero, [\detune,  this.detune]);
+				TempoClock.default.schedAbs(TempoClock.default.nextTimeOnGrid(0.25),{
+					this.sound = Synth(\DireHero, [\detune, this.detune, \speed, [1.5, 1].choose, \bus, this.decodeBus]);
+				});
 		});
 	}
 	changeNetworth{|newNetworth|
@@ -39,8 +46,8 @@ Player {
 		this.level = this.level + 1;
 	}
 	updatePosition{|newPosition|
-		this.position.x = newPosition[0];
-		this.position.y = newPosition[1];
+		this.position = newPosition;
+		this.sound.set(\azi, atan2(this.position.x, this.position.y) / pi);
 	}
 	getNetworth{
 		^this.networth;
@@ -72,8 +79,8 @@ Player {
 		Synth(\HeroDied);
 	}
 	spawn {
+		Synth(\HeroSpawn);
 		this.sound.run(true);
 		this.setAlive(true);
-		Synth(\HeroSpawn);
 	}
 }
