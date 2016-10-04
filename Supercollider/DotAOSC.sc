@@ -1,5 +1,6 @@
 DotaOSC {
-	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDiff, <>experienceDiff, <>maxXPDiff, <>maxGoldDiff, <>lastHitSynth, <>mapXSize, <>mapYSize, <>decodeSynth, <>decodeBus;
+	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDiff, 
+	<>experienceDiff, <>maxXPDiff, <>maxGoldDiff, <>lastHitSynth, <>mapXSize, <>mapYSize, <>decodeSynth, <>decodeBus;
 	*new {
 		^super.new()
 	}
