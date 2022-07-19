@@ -21,7 +21,7 @@ v.onLastHit(1, 0)
 v.onHeroKill(1)
 v.onHeroSpawned(1);
 v.onPositionUpdate(0, -1, 0)
-v.onNetworthChange(1, 20009)
+v.onNetworthChange(0, 1000000)
 
 
 

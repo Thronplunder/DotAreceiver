@@ -1,5 +1,5 @@
 DotaOSC {
-	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDiff, 
+	var <>players, <>radiantKills, <>direKills, <>backgroundsynth, <>unitsAlive, <>goldDiff,
 	<>experienceDiff, <>maxXPDiff, <>maxGoldDiff, <>lastHitSynth, <>mapXSize, <>mapYSize, <>decodeSynth, <>decodeBus;
 	*new {
 		^super.new()
@@ -53,18 +53,21 @@ DotaOSC {
 
 	calcNetworthDiff{
 		var radNet = 0, direNet = 0;
+        "networth changed".postln;
 		players.do({|item|
 			if(item.getTeamID() == 2,
 				{
-					radNet = radNet + item.getXP();
+                    item.getNetworth().postln;
+					radNet = radNet + item.getNetworth();
 				},
 				{
-					direNet = direNet + item.getXP();
+                    item.getNetworth().postln;
+					direNet = direNet + item.getNetworth();
 			});
 		});
 		this.goldDiff = radNet - direNet;
-		if(this.maxGoldDiff < this.goldDif.abs, {this.maxGoldDiff = this.goldDiff.abs;});
-		this.backgroundSynth.set(\direGold, direNet / this.maxGoldDiff, \radGold, radNet / this.maxGoldDiff);
+		if(this.maxGoldDiff < this.goldDiff.abs, {this.maxGoldDiff = this.goldDiff.abs;});
+        this.backgroundsynth.set(\direGold, direNet / (direNet+radNet) , \radGold, radNet / (radNet + direNet));
 	}
 
 	networthChange {|playerID, gold|
@@ -115,6 +118,7 @@ DotaOSC {
 
 	onNetworthChange{|playerID, newNetworth|
 		this.players.at(playerID).changeNetworth(newNetworth);
+        this.calcNetworthDiff();
 	}
 
 	onXPChange{|playerID, newXP|
